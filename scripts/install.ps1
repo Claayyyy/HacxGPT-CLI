@@ -1,5 +1,5 @@
 # HacxGPT Installer for Windows (PowerShell)
-# https://github.com/BlackTechX011/Hacx-GPT
+# https://github.com/HacxGPT-Official/HacxGPT-CLI
 
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "    HacxGPT Installer for Windows" -ForegroundColor Cyan

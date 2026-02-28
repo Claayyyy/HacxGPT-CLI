@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # HacxGPT Installer for Linux
-# https://github.com/BlackTechX011/Hacx-GPT
+# https://github.com/HacxGPT-Official/HacxGPT-CLI
 
 echo "======================================"
 echo "    HacxGPT Installer Script"

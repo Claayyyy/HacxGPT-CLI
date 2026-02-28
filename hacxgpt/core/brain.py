@@ -41,7 +41,7 @@ class HacxBrain:
                 "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "en-US,en;q=0.9",
                 "Connection": "keep-alive",
-                "HTTP-Referer": "https://github.com/BlackTechX011",
+                "HTTP-Referer": "https://github.com/HacxGPT-Official/HacxGPT-CLI",
                 "X-Title": "HacxGPT-CLI"
             }
         )

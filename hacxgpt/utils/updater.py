@@ -8,8 +8,8 @@ from .. import __version__
 class Updater:
     """Handles checking for and applying updates from GitHub."""
     
-    REPO_URL = "https://api.github.com/repos/BlackTechX011/HacxGPT-CLI/releases/latest"
-    GITHUB_RAW_VERSION = "https://raw.githubusercontent.com/BlackTechX011/HacxGPT-CLI/main/version.json"
+    REPO_URL = "https://api.github.com/repos/HacxGPT-Official/HacxGPT-CLI/releases/latest"
+    GITHUB_RAW_VERSION = "https://raw.githubusercontent.com/HacxGPT-Official/HacxGPT-CLI/main/version.json"
 
     @staticmethod
     def get_remote_version():

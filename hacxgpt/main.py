@@ -261,7 +261,7 @@ class App:
     def about(self):
         self.ui.banner()
         
-        readme_url = "https://raw.githubusercontent.com/BlackTechX011/Hacx-GPT/main/README.md"
+        readme_url = "https://raw.githubusercontent.com/HacxGPT-Official/HacxGPT-CLI/main/README.md"
         content = ""
         
         try:
