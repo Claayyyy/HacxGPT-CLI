@@ -761,7 +761,7 @@ class HTTPTransport:
                     status_code=None,
                 )
 
-            except TimeoutError:
+            except TimeoutError as e:
                 if attempt < self.max_retries:
                     time.sleep(2 ** attempt)
                     last_error = e
