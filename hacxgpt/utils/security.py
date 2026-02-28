@@ -17,8 +17,7 @@ class Security:
             if sys.platform == "win32":
                 # Get Windows UUID from registry/command
                 cmd = 'wmic csproduct get uuid'
-                uuid = subprocess.check_output(cmd, shell=True).decode().split('
-')[1].strip()
+                uuid = subprocess.check_output(cmd, shell=True).decode().split('\n')[1].strip()
                 if uuid: return uuid
             elif sys.platform == "darwin":
                 # MacOS hardware UUID
