@@ -12,7 +12,8 @@ def check_dependencies():
         ("dotenv", "python-dotenv"),
         ("rich", "rich"),
         ("pyperclip", "pyperclip"),
-        ("requests", "requests")
+        ("requests", "requests"),
+        ("cryptography", "cryptography")
     ]
     
     missing_pip_names = []

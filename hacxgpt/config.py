@@ -2,7 +2,8 @@
 import os
 import sys
 import json
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
+from .utils.security import Security
 
 class Config:
     """System Configuration & Constants"""
@@ -20,8 +21,7 @@ class Config:
     DEFAULT_PROVIDER = "hacxgpt"
     
     # System Paths
-    ENV_FILE = ".hacx"
-    API_KEY_NAME = "HacxGPT-API" # Legacy/Default
+    ENV_FILE = os.path.join(os.path.expanduser("~"), ".hacx")
     CODE_OUTPUT_DIR = "hacxgpt_code_output"
     
     # Visual Theme
@@ -81,6 +81,20 @@ class Config:
     def get_provider_config(cls, provider=None):
         p = provider or cls.get_provider()
         return cls.PROVIDERS.get(p, cls.PROVIDERS.get(cls.DEFAULT_PROVIDER, {}))
+        
+    @classmethod
+    def get_api_key(cls, provider: str = None) -> str:
+        """Retrieves and decrypts the API key for the specified provider."""
+        p_cfg = cls.get_provider_config(provider)
+        key_var = p_cfg.get("key_var")
+        if not key_var: return ""
+        
+        # Reload env to get latest values
+        load_dotenv(cls.ENV_FILE, override=True)
+        encrypted_key = os.getenv(key_var, "")
+        if not encrypted_key: return ""
+        
+        return Security.decrypt(encrypted_key)
 
     @staticmethod
     def is_hacxgpt_model(model_name: str) -> bool:
@@ -105,14 +119,14 @@ class Config:
         """Initialize environment (load .env, load configuration, etc)"""
         Config.load_providers()
         
-        # Look for .hacx in current directory or user home
-        env_path = Config.ENV_FILE
-        if not os.path.exists(env_path):
-            user_env = os.path.join(os.path.expanduser("~"), Config.ENV_FILE)
-            if os.path.exists(user_env):
-                env_path = user_env
+        # Support migration: if .hacx exists locally but NOT in home, copy it to home
+        local_env = ".hacx"
+        if os.path.exists(local_env) and not os.path.exists(Config.ENV_FILE):
+             import shutil
+             shutil.copy(local_env, Config.ENV_FILE)
+             # print(f"Migration: Copied {local_env} to {Config.ENV_FILE}")
         
-        load_dotenv(dotenv_path=env_path, override=True)
+        load_dotenv(dotenv_path=Config.ENV_FILE, override=True)
         
         # Load last used provider/model if saved in env
         saved_provider = os.getenv("HACX_ACTIVE_PROVIDER")

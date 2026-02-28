@@ -10,6 +10,7 @@ from .ui.interface import UI
 from .core.brain import HacxBrain
 from .utils.system import check_dependencies
 from .utils.updater import Updater
+from .utils.security import Security
 
 # Initialize Colorama
 colorama.init(autoreset=True)
@@ -30,9 +31,7 @@ class App:
         except:
             pass # Silent fail if offline
             
-        p_cfg = Config.get_provider_config()
-        key_var = p_cfg.get("key_var")
-        key = os.getenv(key_var)
+        key = Config.get_api_key()
         
         if not key:
             self.ui.banner()
@@ -96,7 +95,9 @@ class App:
         if not os.path.exists(Config.ENV_FILE):
              with open(Config.ENV_FILE, 'w') as f: f.write("")
 
-        set_key(Config.ENV_FILE, key_var, key.strip())
+        # Encrypt the key before saving
+        encrypted_key = Security.encrypt(key.strip())
+        set_key(Config.ENV_FILE, key_var, encrypted_key)
         set_key(Config.ENV_FILE, "HACX_ACTIVE_PROVIDER", provider)
         set_key(Config.ENV_FILE, "HACX_ACTIVE_MODEL", selected_model)
         
@@ -139,12 +140,45 @@ class App:
                         "/model <name> - Switch Model\n"
                         "/setup - Configure API Keys\n"
                         "/status - Show current config\n"
+                        "/save <name> - Save current session\n"
+                        "/load <name> - Load a saved session\n"
+                        "/sessions - List saved sessions\n"
                         "/new - Wipe Memory\n"
                         "/exit - Disconnect"
                     )
                     self.ui.show_msg("Help", help_text, "magenta")
                     continue
                 
+                if prompt.lower().startswith('/save'):
+                    parts = prompt.split()
+                    if len(parts) < 2:
+                        self.ui.show_msg("Error", "Usage: /save <name>", "red")
+                        continue
+                    name = parts[1]
+                    path = self.brain.save_session(name)
+                    self.ui.show_msg("Session Saved", f"Neural state backed up to: {name}\n[dim]{path}[/]", "green")
+                    continue
+
+                if prompt.lower().startswith('/load'):
+                    parts = prompt.split()
+                    if len(parts) < 2:
+                        self.ui.show_msg("Error", "Usage: /load <name>", "red")
+                        continue
+                    name = parts[1]
+                    if self.brain.load_session(name):
+                        self.ui.show_msg("Session Restored", f"Neural state '{name}' re-established.", "green")
+                    else:
+                        self.ui.show_msg("Error", f"Session '{name}' not found.", "red")
+                    continue
+                
+                if prompt.lower() == '/sessions':
+                    sessions = self.brain.list_sessions()
+                    if not sessions:
+                        self.ui.show_msg("Sessions", "No saved neural states found.", "yellow")
+                    else:
+                        self.ui.show_msg("Saved Sessions", "\n".join([f"- {s}" for s in sessions]), "cyan")
+                    continue
+
                 if prompt.lower() == '/update':
                     self.ui.show_msg("System Update", "Initiating update process...", "cyan")
                     success, msg = Updater.update()

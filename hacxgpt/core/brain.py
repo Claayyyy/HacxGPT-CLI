@@ -1,5 +1,8 @@
 import sys
-from typing import Generator
+import os
+import json
+import time
+from typing import Generator, List
 from ..config import Config
 from ..ui.interface import UI 
 from .api import Client
@@ -12,6 +15,10 @@ class HacxBrain:
         self.api_key = api_key
         self.model = Config.get_model()
         self.system_prompt = Config.load_system_prompt()
+        self.session_dir = os.path.join(os.path.expanduser("~"), ".hacxgpt_sessions")
+        if not os.path.exists(self.session_dir):
+            os.makedirs(self.session_dir)
+            
         self._init_client()
         
         # HacxGPT models don't need the system prompt history
@@ -62,6 +69,42 @@ class HacxBrain:
             self.history = []
         else:
             self.history = [{"role": "system", "content": self.system_prompt}]
+            
+    def save_session(self, name: str) -> str:
+        """Save current history to a file"""
+        session_data = {
+            "model": self.model,
+            "provider": Config.ACTIVE_PROVIDER,
+            "history": self.history,
+            "timestamp": time.time()
+        }
+        filename = f"{name}.json"
+        filepath = os.path.join(self.session_dir, filename)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(session_data, f, indent=4)
+        return filepath
+
+    def load_session(self, name: str) -> bool:
+        """Load history from a file"""
+        filename = f"{name}.json"
+        filepath = os.path.join(self.session_dir, filename)
+        if not os.path.exists(filepath):
+            return False
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            session_data = json.load(f)
+            
+        self.history = session_data.get("history", [])
+        self.model = session_data.get("model", self.model)
+        Config.ACTIVE_PROVIDER = session_data.get("provider", Config.ACTIVE_PROVIDER)
+        Config.ACTIVE_MODEL = self.model
+        self._init_client()
+        return True
+
+    def list_sessions(self) -> List[str]:
+        """List all saved session names"""
+        sessions = [f.replace(".json", "") for f in os.listdir(self.session_dir) if f.endswith(".json")]
+        return sorted(sessions)
         
     def chat(self, user_input: str) -> Generator[str, None, None]:
         self.history.append({"role": "user", "content": user_input})
