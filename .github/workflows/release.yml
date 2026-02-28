@@ -19,7 +19,7 @@ jobs:
       - name: Get version info
         id: version
         run: |
-          VERSION=$(jq -r '.version' version.json)
+          VERSION=$(jq -r '.version' version.json | sed 's/^v//')
           NOTES=$(jq -r '.release_notes' version.json)
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
           echo "notes=$NOTES" >> $GITHUB_OUTPUT
