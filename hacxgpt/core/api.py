@@ -728,14 +728,14 @@ class HTTPTransport:
                 if stream:
                     return self._stream_response(response)
 
-                response_body = response.read().decode("utf-8")
+                response_body = response.read().decode("utf-8", errors="replace")
                 try:
                     return json.loads(response_body)
                 except json.JSONDecodeError:
                     return {"raw": response_body}
 
             except urllib.error.HTTPError as e:
-                error_body = e.read().decode("utf-8") if e.fp else ""
+                error_body = e.read().decode("utf-8", errors="replace") if e.fp else ""
                 if e.code == 429 and attempt < self.max_retries:
                     retry_after = e.headers.get("Retry-After", str(2 ** attempt))
                     try:
@@ -818,7 +818,7 @@ class HTTPTransport:
             response = opener.open(req, timeout=self.timeout)
             return response.read()
         except urllib.error.HTTPError as e:
-            error_body = e.read().decode("utf-8") if e.fp else ""
+            error_body = e.read().decode("utf-8", errors="replace") if e.fp else ""
             self._handle_error(e.code, error_body, url)
         except urllib.error.URLError as e:
             raise APIConnectionError(message=f"Connection error: {str(e.reason)}")
@@ -887,13 +887,13 @@ class HTTPTransport:
                 urllib.request.HTTPSHandler(context=self._ssl_context)
             )
             response = opener.open(req, timeout=self.timeout)
-            response_body = response.read().decode("utf-8")
+            response_body = response.read().decode("utf-8", errors="replace")
             try:
                 return json.loads(response_body)
             except json.JSONDecodeError:
                 return {"raw": response_body, "text": response_body}
         except urllib.error.HTTPError as e:
-            error_body = e.read().decode("utf-8") if e.fp else ""
+            error_body = e.read().decode("utf-8", errors="replace") if e.fp else ""
             self._handle_error(e.code, error_body, url)
         except urllib.error.URLError as e:
             raise APIConnectionError(message=f"Connection error: {str(e.reason)}")
